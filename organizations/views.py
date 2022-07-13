@@ -14,7 +14,7 @@ from organizations.models import Organization
 
 from .decorators import unauthenticated_user, admin_only
 
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 import io
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
@@ -55,8 +55,18 @@ def organizationPDF(request):
 
 
 @login_required(login_url="login")
-def organizationJSON():
-    pass
+def organizationJSON(request):
+    response = {}
+    try:
+        organization = request.user.organizationuser.organization
+        response["name"] = organization.name
+        response["address"] = organization.address
+        response["tax_number"] = organization.tax_number
+        response["mobile_number"] = organization.mobile_number
+        return JsonResponse(response)
+
+    except:
+        return HttpResponse("You are not part of any organization yet.")
 
 
 @login_required(login_url="login")
