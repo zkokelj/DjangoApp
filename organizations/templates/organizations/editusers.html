@@ -1,15 +1,15 @@
-
 {%  extends 'organizations/main.html' %}
 
 {% block content %}
-{% if organization %}
+<h3> Edit users !</h3>
+{% if organizations %}
     <ul>
-        <li>{{ organization.name }}</li>
-        <li>{{ organization.address }}</li>
-        <li>{{ organization.tax_number }}</li>
+    {% for o in organizations %}
+        <li><a href="/organizations/o.id}}/">{{ o.name }}</a></li>
+    {% endfor %}
     </ul>
 {% else %}
-    <p>You are not part of any organizations...</p>
+    <p>No organizations available.</p>
 {% endif %}
 
 <span>Hello, {{ request.user }}</span>

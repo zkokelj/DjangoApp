@@ -9,4 +9,5 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("user/", views.userPage, name="user-page"),
     path("edit/", views.edit, name="edit"),
+    path("editusers/", views.editUsers, name="edit-users"),
 ]

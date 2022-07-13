@@ -13,24 +13,36 @@ from organizations.forms import CreateUserForm
 
 from organizations.models import Organization
 
-from .decorators import unauthenticated_user, allowed_users
+from .decorators import unauthenticated_user, admin_only
 
 
 @login_required(login_url="login")
 def index(request):
-    organizations = Organization.objects.order_by("-id")[:5]
-    output = ", ".join([o.name for o in organizations])
-    context = {"organizations": organizations}
+    organization = (
+        request.user.organizationuser.organization
+        if hasattr(request.user, "organizationuser.organization")
+        else None
+    )
+    context = {"organization": organization}
     return render(request, "organizations/index.html", context)
 
 
 @login_required(login_url="login")
-@allowed_users(allowed_roles=["admins"])
+@admin_only
 def edit(request):
     organizations = Organization.objects.order_by("-id")[:5]
     output = ", ".join([o.name for o in organizations])
     context = {"organizations": organizations}
     return render(request, "organizations/edit.html", context)
+
+
+@login_required(login_url="login")
+@admin_only
+def editUsers(request):
+    organizations = Organization.objects.order_by("-id")[:5]
+    output = ", ".join([o.name for o in organizations])
+    context = {"organizations": organizations}
+    return render(request, "organizations/editusers.html", context)
 
 
 @unauthenticated_user
