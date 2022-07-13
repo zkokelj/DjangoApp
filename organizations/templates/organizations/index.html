@@ -2,17 +2,23 @@
 {%  extends 'organizations/main.html' %}
 
 {% block content %}
+<span>Hello, {{ request.user }}</span>
+<hr>
 {% if organization %}
     <ul>
         <li>{{ organization.name }}</li>
         <li>{{ organization.address }}</li>
         <li>{{ organization.tax_number }}</li>
+        <li>{{ organization.mobile_number }} </li>
     </ul>
+
+    <hr>
+
+    <a href="/orgpdf">Download PDF</a> <br>
+    <a href="/orgjson">Download JSON</a>
+
 {% else %}
     <p>You are not part of any organizations...</p>
 {% endif %}
-
-<span>Hello, {{ request.user }}</span>
-<span><a href="/logout">Logout</a></span>
 
 {% endblock content %}

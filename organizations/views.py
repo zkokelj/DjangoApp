@@ -8,21 +8,64 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LogoutView
 from django.contrib.auth.models import Group
 
-from django.http import HttpResponse
 from organizations.forms import CreateUserForm
 
 from organizations.models import Organization
 
 from .decorators import unauthenticated_user, admin_only
 
+from django.http import FileResponse, HttpResponse
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from reportlab.lib.pagesizes import letter, A4
+
+
+@login_required(login_url="login")
+def organizationPDF(request):
+    buf = io.BytesIO()
+    c = canvas.Canvas(buf, pagesize=A4, bottomup=0)
+    textob = c.beginText()
+    textob.setTextOrigin(inch, inch)
+    textob.setFont("Helvetica", 16)
+
+    lines = [
+        "Organization report:",
+        "",
+    ]
+
+    try:
+        organization = request.user.organizationuser.organization
+        lines.append(f"Name: {organization.name}")
+        lines.append(f"Address: {organization.address}")
+        lines.append(f"Tax number: {organization.tax_number}")
+        lines.append(f"Mobile number: {organization.mobile_number}")
+    except:
+        return HttpResponse("You are not part of any organization yet.")
+
+    for line in lines:
+        textob.textLine(line)
+
+    c.drawText(textob)
+    c.showPage()
+    c.save()
+    buf.seek(0)
+
+    return FileResponse(buf, as_attachment=True, filename="organization.pdf")
+
+
+@login_required(login_url="login")
+def organizationJSON():
+    pass
+
 
 @login_required(login_url="login")
 def index(request):
-    organization = (
-        request.user.organizationuser.organization
-        if hasattr(request.user, "organizationuser.organization")
-        else None
-    )
+    try:
+        organization = request.user.organizationuser.organization
+    except:
+        organization = None
+
     context = {"organization": organization}
     return render(request, "organizations/index.html", context)
 

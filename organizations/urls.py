@@ -10,4 +10,6 @@ urlpatterns = [
     path("user/", views.userPage, name="user-page"),
     path("edit/", views.edit, name="edit"),
     path("editusers/", views.editUsers, name="edit-users"),
+    path("orgpdf/", views.organizationPDF, name="org-pdf"),
+    path("orgjson/", views.organizationJSON, name="org-json"),
 ]
