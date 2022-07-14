@@ -1,18 +1,32 @@
 {%  extends 'organizations/main.html' %}
 
 {% block content %}
-<h3> Edit users !</h3>
-{% if organizations %}
+<br>
+<span>Hello, {{ request.user }}</span>
+<hr>
+
+<h3> Click to add users to your organization:</h3>
+{% if users %}
     <ul>
-    {% for o in organizations %}
-        <li><a href="/organizations/o.id}}/">{{ o.name }}</a></li>
+    {% for u in users %}
+        <li><a href="/adduser/{{u.id}}">{{u}}</a></li>
     {% endfor %}
     </ul>
 {% else %}
-    <p>No organizations available.</p>
+    <p>No users available.</p>
 {% endif %}
 
-<span>Hello, {{ request.user }}</span>
-<span><a href="/logout">Logout</a></span>
+
+<h3> Click to remove users to your organization:</h3>
+{% if myusers %}
+    <ul>
+    {% for u in myusers %}
+        <li><a href="/removeuser/{{u.id}}">{{u}}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No users available.</p>
+{% endif %}
+
 
 {% endblock content %}

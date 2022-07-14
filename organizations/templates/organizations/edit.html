@@ -1,18 +1,16 @@
 {%  extends 'organizations/main.html' %}
 
 {% block content %}
-<h3> EDIT !</h3>
-{% if organizations %}
-    <ul>
-    {% for o in organizations %}
-        <li><a href="/organizations/o.id}}/">{{ o.name }}</a></li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No organizations available.</p>
-{% endif %}
+<h3> Edit organization</h3>
 
+<hr>
 <span>Hello, {{ request.user }}</span>
-<span><a href="/logout">Logout</a></span>
+<hr>
+
+<form method="POST" action="{% url 'edit' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{form}}
+    <button>Submit</button>
+</form>
 
 {% endblock content %}

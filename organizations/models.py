@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import User
+from simple_history.models import HistoricalRecords
 
 
 class Organization(models.Model):
@@ -10,8 +11,9 @@ class Organization(models.Model):
         max_length=8, validators=[RegexValidator(r"^[0-9]{8}$")]
     )
     mobile_number = models.CharField(
-        max_length=8, validators=[RegexValidator(r"00|\+386[0-9]{8}")], null=True
+        max_length=13, validators=[RegexValidator(r"00|\+386[0-9]{8}")], null=True
     )
+    history = HistoricalRecords()
 
     def __str__(self):
         return f"{self.name} - {self.tax_number}"

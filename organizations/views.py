@@ -1,6 +1,6 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -8,9 +8,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LogoutView
 from django.contrib.auth.models import Group
 
-from organizations.forms import CreateUserForm
+from organizations.forms import CreateUserForm, EditOrganization
 
-from organizations.models import Organization
+from organizations.models import Organization, OrganizationUser
 
 from .decorators import unauthenticated_user, admin_only
 
@@ -19,6 +19,37 @@ import io
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import letter, A4
+
+
+@login_required(login_url="login")
+@admin_only
+def addUser(request, id):
+    user = get_object_or_404(User, id=id)
+    added = OrganizationUser(
+        user=user, organization=request.user.organizationuser.organization, role="user"
+    )
+    added.save()
+    return redirect("edit-users")
+
+
+@login_required(login_url="login")
+@admin_only
+def removeUser(request, id):
+    user = get_object_or_404(User, id=id)
+    try:
+        if (
+            user.organizationuser.organization
+            == request.user.organizationuser.organization
+        ):
+            instance = OrganizationUser.objects.get(user=user)
+            instance.delete()
+            return redirect("edit-users")
+        else:
+            return HttpResponse(
+                "Forbidden  to remove users that are not part of your org."
+            )
+    except:
+        return HttpResponse("Forbidden!")
 
 
 @login_required(login_url="login")
@@ -83,18 +114,42 @@ def index(request):
 @login_required(login_url="login")
 @admin_only
 def edit(request):
-    organizations = Organization.objects.order_by("-id")[:5]
-    output = ", ".join([o.name for o in organizations])
-    context = {"organizations": organizations}
-    return render(request, "organizations/edit.html", context)
+    if request.method == "POST":
+        print(f"Request method POST + {request.POST}")
+
+        try:
+            org = request.user.organizationuser.organization
+        except:
+            return HttpResponse("User doesn't belong to an instance")
+
+        form = EditOrganization(
+            request.POST, instance=org, initial={"name": "abc", "address": "def"}
+        )
+        if form.is_valid():
+            form.save()
+            return redirect("edit")
+        else:
+            print(form.errors.as_data())
+            return render(request, "organizations/edit.html", {"form": form})
+
+    return render(request, "organizations/edit.html", {"form": EditOrganization})
 
 
 @login_required(login_url="login")
 @admin_only
 def editUsers(request):
-    organizations = Organization.objects.order_by("-id")[:5]
-    output = ", ".join([o.name for o in organizations])
-    context = {"organizations": organizations}
+    usersorg = list(OrganizationUser.objects.values_list("user", flat=True))
+    users = User.objects.exclude(id__in=usersorg)
+
+    org = request.user.organizationuser.organization
+    sameorgusers = (
+        OrganizationUser.objects.filter(organization=org)
+        .filter(role="user")
+        .values_list("user", flat=True)
+    )
+    myusers = User.objects.filter(id__in=sameorgusers)
+
+    context = {"users": users, "myusers": myusers}
     return render(request, "organizations/editusers.html", context)
 
 
@@ -102,7 +157,6 @@ def editUsers(request):
 def registerPage(request):
     form = CreateUserForm()
     if request.method == "POST":
-        print("In register POST...")
         form = CreateUserForm(request.POST)
         if form.is_valid():
             user = form.save()
@@ -119,11 +173,6 @@ def registerPage(request):
 
     context = {"form": form}
     return render(request, "organizations/register.html", context)
-
-
-def userPage(request):
-    content = {}
-    return render(request, "account/user.html")
 
 
 @unauthenticated_user

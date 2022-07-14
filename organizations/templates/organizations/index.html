@@ -2,9 +2,13 @@
 {%  extends 'organizations/main.html' %}
 
 {% block content %}
+<br>
 <span>Hello, {{ request.user }}</span>
 <hr>
 {% if organization %}
+
+    <h4>Organization details: </h4>
+
     <ul>
         <li>{{ organization.name }}</li>
         <li>{{ organization.address }}</li>
